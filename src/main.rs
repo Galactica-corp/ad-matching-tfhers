@@ -1,5 +1,5 @@
 use tfhe::prelude::*;
-use tfhe::{generate_keys, set_server_key, ConfigBuilder, FheUint128, FheUint32};
+use tfhe::{generate_keys, set_server_key, ClientKey, ConfigBuilder, FheUint128, FheUint32};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Basic configuration to use homomorphic integers
@@ -80,3 +80,23 @@ fn fhe_overlap_score(
 
     return Ok(encrypted_score);
 }
+
+// /**
+//  * Simple benchmark to compare performance with the benchmarks made by Zama
+//  */
+// fn fhe_benchmark(client_key: &ClientKey) -> Result<(), Box<dyn std::error::Error>> {
+//     // Binary AND
+//     let secret = 0x123456u128;
+//     let encrypted = FheUint128::try_encrypt(secret, client_key)?;
+//     let scalar = 0xabcdefu128;
+
+//     let start_time = std::time::Instant::now();
+//     let result = &encrypted & scalar;
+//     let elapsed = start_time.elapsed();
+//     println!("& scalar operation: {:?}", elapsed);
+
+//     let verify: u128 = result.decrypt(client_key);
+//     assert_eq!(verify, secret & scalar);
+
+//     return Ok(());
+// }
