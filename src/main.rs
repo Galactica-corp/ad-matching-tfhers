@@ -2,19 +2,25 @@ use tfhe::integer::U256;
 use tfhe::prelude::*;
 use tfhe::{generate_keys, set_server_key, ConfigBuilder, FheUint256, FheUint32};
 
+/**
+ * Experimental FHE ad matching algorithm to run benchmarks and get towards a proof of concept.
+ */
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Basic configuration to use homomorphic integers
     let config = ConfigBuilder::default().build();
 
     // Key generation
+    // The client key will later be only the user's device for encrypting and decrypting personal data
+    // the server key will be handled by the FHE matching service
     let (client_key, server_keys) = generate_keys(config);
-    // On the server side:
+
     set_server_key(server_keys);
 
+    // Some dummy user profile
     let user_profile = U256::from((0x00ffu128, 0x00ffu128));
-    // Encrypting the input data using the (private) client_key
     let encrypted_user_profile = FheUint256::try_encrypt(user_profile, &client_key)?;
 
+    // Some dummy profile representing the target profile the advertiser wants to reach
     let target_profile = U256::from((0xaaaau128, 0xaaaau128));
 
     let start_time = std::time::Instant::now();
@@ -39,7 +45,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 /**
- * Calculate the binary hamming distance between the user profile and the target profile
+ * Calculate the binary hamming distance between the user profile and the target profile.
+ * It is a measure of how different the user and target profiles are.
  */
 fn fhe_hamming_distance(
     encrypted_user_profile: &FheUint256,
@@ -61,7 +68,10 @@ fn fhe_hamming_distance(
 }
 
 /**
- * Calculate the the score of how well the user profile matches the target profile. If it is a perfect match, the score is the amount of bits set in the target profile.
+ * Calculate the the score of how well the user profile matches the target profile.
+ * It is a measure of how much the user and target profiles overlap.
+ *
+ * If it is a perfect match, the score is the amount of bits set in the target profile.
  */
 fn fhe_overlap_score(
     encrypted_user_profile: &FheUint256,
