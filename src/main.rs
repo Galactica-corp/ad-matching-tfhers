@@ -1,5 +1,6 @@
+use tfhe::integer::U256;
 use tfhe::prelude::*;
-use tfhe::{generate_keys, set_server_key, ClientKey, ConfigBuilder, FheUint128, FheUint32};
+use tfhe::{generate_keys, set_server_key, ConfigBuilder, FheUint256, FheUint32};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Basic configuration to use homomorphic integers
@@ -10,11 +11,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // On the server side:
     set_server_key(server_keys);
 
-    let user_profile = 0x00ffu128;
+    let user_profile = U256::from((0x00ffu128, 0x00ffu128));
     // Encrypting the input data using the (private) client_key
-    let encrypted_user_profile = FheUint128::try_encrypt(user_profile, &client_key)?;
+    let encrypted_user_profile = FheUint256::try_encrypt(user_profile, &client_key)?;
 
-    let target_profile = 0xaaaau128;
+    let target_profile = U256::from((0xaaaau128, 0xaaaau128));
 
     let start_time = std::time::Instant::now();
     let encrypted_distance = fhe_hamming_distance(&encrypted_user_profile, target_profile)?;
@@ -41,8 +42,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  * Calculate the binary hamming distance between the user profile and the target profile
  */
 fn fhe_hamming_distance(
-    encrypted_user_profile: &FheUint128,
-    target_profile: u128,
+    encrypted_user_profile: &FheUint256,
+    target_profile: U256,
 ) -> Result<FheUint32, Box<dyn std::error::Error>> {
     // Binary XOR
     let start_time = std::time::Instant::now();
@@ -63,8 +64,8 @@ fn fhe_hamming_distance(
  * Calculate the the score of how well the user profile matches the target profile. If it is a perfect match, the score is the amount of bits set in the target profile.
  */
 fn fhe_overlap_score(
-    encrypted_user_profile: &FheUint128,
-    target_profile: u128,
+    encrypted_user_profile: &FheUint256,
+    target_profile: U256,
 ) -> Result<FheUint32, Box<dyn std::error::Error>> {
     let start_time = std::time::Instant::now();
     // Binary AND
